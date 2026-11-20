@@ -1,9 +1,8 @@
 import React from 'react';
 import type { RewatchMovie } from '../types/rewatch.types';
 import { Card } from '../../../components/ui/Card';
-import { Badge } from '../../../components/ui/Badge';
 import { formatRuntime } from '../../../lib/format-runtime';
-import { ListOrdered, CheckCircle2, Circle, Clock, Calendar } from 'lucide-react';
+import { ListOrdered, CheckCircle2, Circle, Clock, Calendar, Loader2 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 
 export interface RewatchListProps {
@@ -89,23 +88,38 @@ export const RewatchList: React.FC<RewatchListProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0">
-                <Badge variant={movie.watched ? 'success' : 'default'} size="sm">
-                  {movie.watched ? 'Watched' : 'Unwatched'}
-                </Badge>
-
+              <div className="flex items-center gap-2.5 shrink-0">
                 <button
                   type="button"
                   disabled={isToggling}
                   onClick={() => onToggleWatched(movie.id, movie.watched)}
-                  className="p-1 rounded-md text-slate-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-                  title={movie.watched ? 'Mark as unwatched' : 'Mark as watched'}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-150',
+                    'focus:outline-none focus:ring-2 focus:ring-red-500/80',
+                    isToggling
+                      ? 'border-slate-700 bg-slate-800/80 text-slate-400 cursor-wait'
+                      : movie.watched
+                      ? 'border-emerald-800/60 bg-emerald-950/50 text-emerald-300 hover:bg-emerald-900/40 hover:border-emerald-700'
+                      : 'border-slate-700 bg-slate-900 text-slate-400 hover:bg-slate-800 hover:border-slate-600 hover:text-slate-200',
+                  )}
+                  title={movie.watched ? 'Click to mark as unwatched' : 'Click to mark as watched'}
                   aria-label={`Toggle watch status for ${movie.title}`}
                 >
-                  {movie.watched ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400 hover:text-emerald-300 transition-colors" />
+                  {isToggling ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-red-400 shrink-0" />
+                      <span>Updating...</span>
+                    </>
+                  ) : movie.watched ? (
+                    <>
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                      <span>Watched</span>
+                    </>
                   ) : (
-                    <Circle className="h-5 w-5 text-slate-500 hover:text-slate-300 transition-colors" />
+                    <>
+                      <Circle className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                      <span>Mark Watched</span>
+                    </>
                   )}
                 </button>
               </div>

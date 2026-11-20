@@ -4,7 +4,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { formatRuntime } from '../../../lib/format-runtime';
-import { CheckCircle2, Circle, Clock, Calendar, Edit3, Search, Filter } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, Calendar, Edit3, Search, Filter, Loader2 } from 'lucide-react';
+import { cn } from '../../../lib/utils';
 
 export interface MovieListProps {
   movies: Movie[];
@@ -120,14 +121,33 @@ export const MovieList: React.FC<MovieListProps> = ({
                       type="button"
                       disabled={isToggling}
                       onClick={() => onToggleWatched(movie.id, movie.watched)}
-                      className="shrink-0 p-1 rounded-md text-slate-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-                      title={movie.watched ? 'Mark as unwatched' : 'Mark as watched'}
+                      className={cn(
+                        'shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-150',
+                        'focus:outline-none focus:ring-2 focus:ring-red-500/80',
+                        isToggling
+                          ? 'border-slate-700 bg-slate-800/80 text-slate-400 cursor-wait'
+                          : movie.watched
+                          ? 'border-emerald-800/60 bg-emerald-950/50 text-emerald-300 hover:bg-emerald-900/40 hover:border-emerald-700'
+                          : 'border-slate-700 bg-slate-900 text-slate-400 hover:bg-slate-800 hover:border-slate-600 hover:text-slate-200',
+                      )}
+                      title={movie.watched ? 'Click to mark as unwatched' : 'Click to mark as watched'}
                       aria-label={`Toggle watch status for ${movie.title}`}
                     >
-                      {movie.watched ? (
-                        <CheckCircle2 className="h-5 w-5 text-emerald-400 hover:text-emerald-300 transition-colors" />
+                      {isToggling ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-red-400 shrink-0" />
+                          <span>Updating...</span>
+                        </>
+                      ) : movie.watched ? (
+                        <>
+                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                          <span>Watched</span>
+                        </>
                       ) : (
-                        <Circle className="h-5 w-5 text-slate-500 hover:text-slate-300 transition-colors" />
+                        <>
+                          <Circle className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                          <span>Mark Watched</span>
+                        </>
                       )}
                     </button>
                   </div>

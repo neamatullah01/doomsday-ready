@@ -138,6 +138,7 @@ export const BookingPage: React.FC = () => {
         onClose={() => setIsAddCinemaModalOpen(false)}
         title="Add Cinema & Seat Bundles"
         description="Register a new cinema and specify its available bundle sizes (1–500 seats each)."
+        icon={<Ticket className="h-5 w-5 text-red-500" />}
         maxWidth="md"
       >
         <CinemaForm

@@ -114,6 +114,7 @@ export const MoviesPage: React.FC = () => {
         onClose={() => setIsAddModalOpen(false)}
         title="Add MCU Movie"
         description="Add a new movie and define any movies that must be watched prior."
+        icon={<Film className="h-5 w-5 text-red-500" />}
         maxWidth="lg"
       >
         <MovieForm
@@ -130,6 +131,7 @@ export const MoviesPage: React.FC = () => {
         onClose={() => setEditingMovie(null)}
         title={editingMovie ? `Edit "${editingMovie.title}"` : 'Edit Movie'}
         description="Update movie details or reconfigure prerequisite watch dependencies."
+        icon={<Film className="h-5 w-5 text-red-500" />}
         maxWidth="lg"
       >
         {editingMovie && (
