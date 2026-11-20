@@ -227,4 +227,34 @@ describe('MoviesService', () => {
       expect(result.prerequisites).toEqual(['iron-man']);
     });
   });
+
+  describe('getRewatchOrder', () => {
+    it('should calculate valid prerequisite-first order and exclude target movie', async () => {
+      prisma.movie.findUnique.mockResolvedValue({ id: 'm3', title: 'The Avengers' });
+      prisma.movie.findMany.mockResolvedValue([
+        { id: 'm1', title: 'Iron Man', releaseYear: 2008, runtimeMinutes: 126, watched: true },
+        { id: 'm2', title: 'Captain America: The First Avenger', releaseYear: 2011, runtimeMinutes: 124, watched: false },
+        { id: 'm3', title: 'The Avengers', releaseYear: 2012, runtimeMinutes: 143, watched: false },
+      ]);
+      prisma.moviePrerequisite.findMany.mockResolvedValue([
+        { movieId: 'm3', prerequisiteId: 'm1' },
+        { movieId: 'm3', prerequisiteId: 'm2' },
+      ]);
+
+      const result = await service.getRewatchOrder('m3');
+
+      expect(result.targetMovie.title).toBe('The Avengers');
+      expect(result.totalCount).toBe(2);
+      expect(result.watchedCount).toBe(1);
+      expect(result.unwatchedCount).toBe(1);
+      expect(result.remainingRuntimeMinutes).toBe(124);
+      expect(result.movies.map((m) => m.title)).not.toContain('The Avengers');
+    });
+
+    it('should throw NotFoundException if target movie does not exist', async () => {
+      prisma.movie.findUnique.mockResolvedValue(null);
+
+      await expect(service.getRewatchOrder('unknown-id')).rejects.toThrow(NotFoundException);
+    });
+  });
 });

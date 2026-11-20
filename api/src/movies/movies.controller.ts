@@ -23,6 +23,7 @@ import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { MovieResponseDto } from './dto/movie-response.dto';
+import { RewatchOrderResponseDto } from './dto/rewatch-order-response.dto';
 import { ErrorResponseDto } from '../common/dto/error-response.dto';
 
 @ApiTags('Movies')
@@ -122,5 +123,33 @@ export class MoviesController {
     @Body() dto: UpdateMovieDto,
   ) {
     return this.moviesService.update(id, dto);
+  }
+
+  @Get(':id/rewatch-order')
+  @ApiOperation({
+    summary: 'Get rewatch order',
+    description:
+      'Calculates a valid prerequisite-first rewatch order for the specified target movie. Returns watched progress and remaining unwatched runtime.',
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'Target movie UUID',
+    example: 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
+  })
+  @ApiOkResponse({
+    type: RewatchOrderResponseDto,
+    description: 'Rewatch order and runtime statistics calculated successfully',
+  })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    description: 'Target movie not found',
+  })
+  @ApiConflictResponse({
+    type: ErrorResponseDto,
+    description: 'Circular dependency detected',
+  })
+  getRewatchOrder(@Param('id', ParseUUIDPipe) id: string) {
+    return this.moviesService.getRewatchOrder(id);
   }
 }

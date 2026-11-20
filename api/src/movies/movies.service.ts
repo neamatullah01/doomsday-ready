@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { wouldCreateCycle } from './algorithms/dependency-graph';
+import { computeRewatchOrder, MovieNode } from './algorithms/rewatch-order';
 import { CircularDependencyException } from '../common/exceptions/circular-dependency.exception';
 
 @Injectable()
@@ -131,7 +132,7 @@ export class MoviesService {
 
     // Validate prerequisites if specified
     if (dto.prerequisiteIds !== undefined) {
-      // 1. Check self-dependency
+      // 1. Check direct self-dependency
       if (dto.prerequisiteIds.includes(id)) {
         throw new CircularDependencyException('A movie cannot depend on itself.');
       }
@@ -203,5 +204,40 @@ export class MoviesService {
         prerequisites: updated.prerequisites.map((p) => p.prerequisiteId),
       };
     });
+  }
+
+  async getRewatchOrder(id: string) {
+    const target = await this.prisma.movie.findUnique({
+      where: { id },
+    });
+
+    if (!target) {
+      throw new NotFoundException(`Movie with ID ${id} not found.`);
+    }
+
+    const allMovies = await this.prisma.movie.findMany({
+      select: {
+        id: true,
+        title: true,
+        releaseYear: true,
+        runtimeMinutes: true,
+        watched: true,
+      },
+    });
+
+    const movieMap = new Map<string, MovieNode>();
+    for (const movie of allMovies) {
+      movieMap.set(movie.id, movie);
+    }
+
+    const relations = await this.prisma.moviePrerequisite.findMany();
+    const adjacencyList = new Map<string, string[]>();
+    for (const rel of relations) {
+      const list = adjacencyList.get(rel.movieId) || [];
+      list.push(rel.prerequisiteId);
+      adjacencyList.set(rel.movieId, list);
+    }
+
+    return computeRewatchOrder(id, movieMap, adjacencyList);
   }
 }

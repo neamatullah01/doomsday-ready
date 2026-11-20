@@ -250,4 +250,27 @@ describe('Movies API (e2e)', () => {
     expect(res.body.statusCode).toBe(409);
     expect(res.body.code).toBe('CIRCULAR_DEPENDENCY');
   });
+
+  it('GET /api/movies/:id/rewatch-order - should return valid rewatch order with runtime and progress', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/api/movies/${createdMovieId}/rewatch-order`)
+      .expect(200);
+
+    expect(res.body).toHaveProperty('targetMovie');
+    expect(res.body.targetMovie.id).toBe(createdMovieId);
+    expect(res.body).toHaveProperty('movies');
+    expect(res.body).toHaveProperty('watchedCount');
+    expect(res.body).toHaveProperty('totalCount');
+    expect(res.body).toHaveProperty('unwatchedCount');
+    expect(res.body).toHaveProperty('remainingRuntimeMinutes');
+  });
+
+  it('GET /api/movies/:id/rewatch-order - should return 404 for non-existent target movie', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/api/movies/88888888-8888-4888-a888-888888888888/rewatch-order')
+      .expect(404);
+
+    expect(res.body.statusCode).toBe(404);
+    expect(res.body.code).toBe('NOT_FOUND');
+  });
 });

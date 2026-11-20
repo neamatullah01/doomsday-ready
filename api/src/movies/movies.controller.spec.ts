@@ -12,6 +12,7 @@ describe('MoviesController', () => {
       findAll: jest.fn(),
       findOne: jest.fn(),
       update: jest.fn(),
+      getRewatchOrder: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -60,5 +61,20 @@ describe('MoviesController', () => {
     const result = await controller.update('uuid-1', dto);
     expect(service.update).toHaveBeenCalledWith('uuid-1', dto);
     expect(result).toHaveProperty('watched', true);
+  });
+
+  it('should call moviesService.getRewatchOrder', async () => {
+    const rewatchResult = {
+      targetMovie: { id: 'uuid-1', title: 'Iron Man' },
+      movies: [],
+      watchedCount: 0,
+      totalCount: 0,
+      unwatchedCount: 0,
+      remainingRuntimeMinutes: 0,
+    };
+    service.getRewatchOrder?.mockResolvedValue(rewatchResult);
+    const result = await controller.getRewatchOrder('uuid-1');
+    expect(service.getRewatchOrder).toHaveBeenCalledWith('uuid-1');
+    expect(result).toEqual(rewatchResult);
   });
 });
