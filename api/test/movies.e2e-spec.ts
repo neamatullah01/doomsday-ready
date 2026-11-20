@@ -12,7 +12,7 @@ describe('Movies API (e2e)', () => {
   const moviesDb = new Map<string, any>();
   const prereqsDb: Array<{ movieId: string; prerequisiteId: string }> = [];
 
-  const mockPrismaService = {
+  const mockPrismaService: any = {
     movie: {
       findFirst: jest.fn(async ({ where }) => {
         for (const movie of moviesDb.values()) {

@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -21,6 +22,8 @@ import {
 import { CinemasService } from './cinemas.service';
 import { CreateCinemaDto } from './dto/create-cinema.dto';
 import { CinemaResponseDto } from './dto/cinema-response.dto';
+import { BookingQueryDto } from './dto/booking-query.dto';
+import { BookingResponseDto } from './dto/booking-response.dto';
 import { ErrorResponseDto } from '../common/dto/error-response.dto';
 
 @ApiTags('Cinemas')
@@ -85,5 +88,36 @@ export class CinemasController {
   })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.cinemasService.findOne(id);
+  }
+
+  @Get(':id/booking')
+  @ApiOperation({
+    summary: 'Get booking quote',
+    description:
+      'Calculates the optimal minimum bundle combination for a given watch-party group size using unbounded dynamic programming. Returns fewest total bundles or possible: false.',
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'Cinema UUID',
+    example: 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
+  })
+  @ApiOkResponse({
+    type: BookingResponseDto,
+    description: 'Booking quote calculation result',
+  })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    description: 'Invalid group size (must be integer 1–10,000)',
+  })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    description: 'Cinema not found',
+  })
+  getBookingQuote(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: BookingQueryDto,
+  ) {
+    return this.cinemasService.getBookingQuote(id, query.groupSize);
   }
 }

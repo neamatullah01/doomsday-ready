@@ -11,6 +11,7 @@ describe('CinemasController', () => {
       create: jest.fn(),
       findAll: jest.fn(),
       findOne: jest.fn(),
+      getBookingQuote: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -51,5 +52,24 @@ describe('CinemasController', () => {
     const result = await controller.findOne('uuid-c1');
     expect(service.findOne).toHaveBeenCalledWith('uuid-c1');
     expect(result).toHaveProperty('id', 'uuid-c1');
+  });
+
+  it('should call cinemasService.getBookingQuote', async () => {
+    const mockQuote = {
+      cinema: { id: 'uuid-c1', name: 'Cinema A', bundleSizes: [2, 5] },
+      groupSize: 11,
+      possible: true,
+      totalBundles: 4,
+      bundles: [
+        { size: 5, quantity: 1 },
+        { size: 2, quantity: 3 },
+      ],
+      totalSeats: 11,
+    };
+    service.getBookingQuote?.mockResolvedValue(mockQuote);
+
+    const result = await controller.getBookingQuote('uuid-c1', { groupSize: 11 });
+    expect(service.getBookingQuote).toHaveBeenCalledWith('uuid-c1', 11);
+    expect(result).toEqual(mockQuote);
   });
 });
