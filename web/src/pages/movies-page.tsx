@@ -2,18 +2,58 @@ import React, { useState } from 'react';
 import { PageHeader } from '../components/shared/PageHeader';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { Modal } from '../components/ui/Modal';
 import { LoadingSpinner } from '../components/feedback/LoadingSpinner';
 import { ErrorMessage } from '../components/feedback/ErrorMessage';
 import { EmptyState } from '../components/feedback/EmptyState';
+import { MovieList } from '../features/movies/components/movie-list';
+import { MovieForm } from '../features/movies/components/movie-form';
 import { useMovies } from '../features/movies/hooks/use-movies';
-import { formatRuntime } from '../lib/format-runtime';
-import { Film, Plus, CheckCircle2, Circle, Clock, Calendar } from 'lucide-react';
+import type { Movie } from '../features/movies/types/movie.types';
+import type { MovieFormValues } from '../features/movies/schemas/movie-form.schema';
+import { Film, Plus } from 'lucide-react';
 
 export const MoviesPage: React.FC = () => {
-  const { movies, isLoading, isError, error, refetch, toggleWatched, isTogglingWatched } =
-    useMovies();
+  const {
+    movies,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    createMovie,
+    isCreating,
+    updateMovie,
+    isUpdating,
+    toggleWatched,
+  } = useMovies();
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingMovie, setEditingMovie] = useState<Movie | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  const handleCreateMovie = async (values: MovieFormValues) => {
+    await createMovie({
+      title: values.title,
+      releaseYear: values.releaseYear,
+      runtimeMinutes: values.runtimeMinutes,
+      prerequisiteIds: values.prerequisiteIds,
+    });
+    setIsAddModalOpen(false);
+  };
+
+  const handleUpdateMovie = async (values: MovieFormValues) => {
+    if (!editingMovie) return;
+    await updateMovie({
+      id: editingMovie.id,
+      payload: {
+        title: values.title,
+        releaseYear: values.releaseYear,
+        runtimeMinutes: values.runtimeMinutes,
+        prerequisiteIds: values.prerequisiteIds,
+      },
+    });
+    setEditingMovie(null);
+  };
 
   const handleToggleWatched = async (id: string, currentWatched: boolean) => {
     try {
@@ -28,20 +68,24 @@ export const MoviesPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="MCU Movies"
-        description="Manage Marvel Cinematic Universe movies, configure prerequisite watch chains, and track your progress."
+        description="Manage Marvel Cinematic Universe movies, configure prerequisite watch dependencies, and track your progress."
         badge={
           <Badge variant="cyan" size="md">
             {movies.length} {movies.length === 1 ? 'Movie' : 'Movies'}
           </Badge>
         }
       >
-        <Button variant="primary" className="gap-2">
+        <Button
+          variant="primary"
+          onClick={() => setIsAddModalOpen(true)}
+          className="gap-2 shadow-lg shadow-red-900/20"
+        >
           <Plus className="h-4 w-4" />
           Add Movie
         </Button>
       </PageHeader>
 
-      {isLoading && <LoadingSpinner label="Loading movies from database..." size="lg" />}
+      {isLoading && <LoadingSpinner label="Loading MCU movies from API..." size="lg" />}
 
       {isError && <ErrorMessage error={error} onRetry={() => refetch()} />}
 
@@ -49,75 +93,55 @@ export const MoviesPage: React.FC = () => {
         <EmptyState
           icon={Film}
           title="No movies found"
-          description="Your MCU library is empty. Start by adding your first movie or run the backend database seed."
-          actionLabel="Add First Movie"
-          onAction={() => {}}
+          description="Your MCU library is empty. Click below to add a movie or run the database seed."
+          actionLabel="Add Movie"
+          onAction={() => setIsAddModalOpen(true)}
         />
       )}
 
       {!isLoading && !isError && movies.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {movies.map((movie) => {
-            const isToggling = isTogglingWatched && togglingId === movie.id;
-
-            return (
-              <Card
-                key={movie.id}
-                className="group border-slate-800 hover:border-slate-700 hover:bg-slate-900/80 transition-all duration-200"
-              >
-                <CardHeader className="p-5 pb-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <CardTitle className="text-base font-bold text-white group-hover:text-red-400 transition-colors">
-                      {movie.title}
-                    </CardTitle>
-                    <button
-                      type="button"
-                      disabled={isToggling}
-                      onClick={() => handleToggleWatched(movie.id, movie.watched)}
-                      className="shrink-0 p-1 text-slate-400 hover:text-white transition-colors focus:outline-none"
-                      title={movie.watched ? 'Mark as unwatched' : 'Mark as watched'}
-                      aria-label={`Toggle watch status for ${movie.title}`}
-                    >
-                      {movie.watched ? (
-                        <CheckCircle2 className="h-5 w-5 text-emerald-400 hover:text-emerald-300" />
-                      ) : (
-                        <Circle className="h-5 w-5 text-slate-500 hover:text-slate-300" />
-                      )}
-                    </button>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-5 pt-0 space-y-3">
-                  <div className="flex items-center gap-4 text-xs text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5 text-slate-500" />
-                      {movie.releaseYear}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5 text-slate-500" />
-                      {formatRuntime(movie.runtimeMinutes)}
-                    </span>
-                    <Badge variant={movie.watched ? 'success' : 'default'} size="sm">
-                      {movie.watched ? 'Watched' : 'Unwatched'}
-                    </Badge>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                    <span>
-                      Prerequisites:{' '}
-                      <strong className="text-slate-200">
-                        {movie.prerequisites?.length || 0}
-                      </strong>
-                    </span>
-                    <Button variant="ghost" size="sm" className="h-7 text-xs px-2">
-                      Edit
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        <MovieList
+          movies={movies}
+          onEditMovie={(movie) => setEditingMovie(movie)}
+          onToggleWatched={handleToggleWatched}
+          isTogglingId={togglingId}
+        />
       )}
+
+      {/* Add Movie Modal */}
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Add MCU Movie"
+        description="Add a new movie and define any movies that must be watched prior."
+        maxWidth="lg"
+      >
+        <MovieForm
+          availableMovies={movies}
+          onSubmit={handleCreateMovie}
+          onCancel={() => setIsAddModalOpen(false)}
+          isLoading={isCreating}
+        />
+      </Modal>
+
+      {/* Edit Movie Modal */}
+      <Modal
+        isOpen={Boolean(editingMovie)}
+        onClose={() => setEditingMovie(null)}
+        title={editingMovie ? `Edit "${editingMovie.title}"` : 'Edit Movie'}
+        description="Update movie details or reconfigure prerequisite watch dependencies."
+        maxWidth="lg"
+      >
+        {editingMovie && (
+          <MovieForm
+            initialData={editingMovie}
+            availableMovies={movies}
+            onSubmit={handleUpdateMovie}
+            onCancel={() => setEditingMovie(null)}
+            isLoading={isUpdating}
+          />
+        )}
+      </Modal>
     </div>
   );
 };

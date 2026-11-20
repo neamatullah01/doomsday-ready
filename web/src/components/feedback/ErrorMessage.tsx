@@ -24,6 +24,11 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({ error, onRetry, clas
   }
 
   const isCircularDependency = code === ErrorCodes.CIRCULAR_DEPENDENCY;
+  const isNetworkError =
+    message.toLowerCase().includes('failed to fetch') ||
+    message.toLowerCase().includes('networkerror') ||
+    message.toLowerCase().includes('connection refused') ||
+    message.toLowerCase().includes('load failed');
 
   return (
     <div
@@ -54,7 +59,9 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({ error, onRetry, clas
             )}
           </div>
           <p className="text-xs leading-relaxed text-slate-300">
-            {message}
+            {isNetworkError
+              ? 'Cannot connect to backend API server at ' + (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api') + '. Please ensure the NestJS API server is started.'
+              : message}
           </p>
           {isCircularDependency && (
             <p className="text-xs text-amber-300/90 pt-1">
