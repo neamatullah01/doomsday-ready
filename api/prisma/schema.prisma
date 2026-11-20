@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Movie {
+  id             String              @id @default(uuid()) @db.Uuid
+  title          String              @unique
+  releaseYear    Int
+  runtimeMinutes Int
+  watched        Boolean             @default(false)
+
+  prerequisites  MoviePrerequisite[] @relation("MoviePrerequisites")
+  dependents     MoviePrerequisite[] @relation("MovieDependents")
+
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([title])
+}
+
+model MoviePrerequisite {
+  movieId        String @db.Uuid
+  prerequisiteId String @db.Uuid
+
+  movie        Movie @relation("MoviePrerequisites", fields: [movieId], references: [id], onDelete: Cascade)
+  prerequisite Movie @relation("MovieDependents", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@id([movieId, prerequisiteId])
+  @@index([prerequisiteId])
+}
+
+model Cinema {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  bundleSizes Int[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+}

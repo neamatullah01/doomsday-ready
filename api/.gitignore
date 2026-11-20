@@ -58,3 +58,5 @@ Thumbs.db
 .tmp/
 .eslintcache
 .oxlintcache
+node_modules/
+dist/
