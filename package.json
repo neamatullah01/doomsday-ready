@@ -1,0 +1,16 @@
+{
+  "name": "doomsday-ready",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Doomsday Ready — Full-Stack MCU Movie Planning & Watch-Party Booking Calculation Platform",
+  "scripts": {
+    "start:api": "npm --prefix api run start:dev",
+    "start:web": "npm --prefix web run dev",
+    "build": "npm --prefix api run build && npm --prefix web run build",
+    "build:api": "npm --prefix api run build",
+    "build:web": "npm --prefix web run build",
+    "test": "npm --prefix api test",
+    "test:api": "npm --prefix api test",
+    "seed": "npm --prefix api run seed"
+  }
+}
