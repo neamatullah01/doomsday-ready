@@ -25,13 +25,6 @@ const enum VisitState {
   Visiting = 1,
   Visited = 2,
 }
-
-/**
- * Computes a valid prerequisite-first rewatch order for a target movie.
- * Uses DFS postorder traversal to guarantee every prerequisite appears
- * before any movie that depends on it.
- * Excludes the target movie itself from movies, watched count, and remaining runtime.
- */
 export function computeRewatchOrder(
   targetId: string,
   allMovies: Map<string, MovieNode>,
@@ -65,7 +58,6 @@ export function computeRewatchOrder(
 
     visitStates.set(currentId, VisitState.Visited);
 
-    // Exclude target movie from result list
     if (currentId !== targetId) {
       const movie = allMovies.get(currentId);
       if (movie) {

@@ -10,102 +10,40 @@ export interface MinimumBundlesResult {
   totalSeats: number | null;
 }
 
-/**
- * Computes the minimum number of seat bundles required to seat exactly `groupSize` people
- * using an unbounded dynamic programming approach (minimum coin change).
- *
- * @param bundleSizes Array of available bundle sizes (e.g. [2, 5] or [6, 9, 20])
- * @param groupSize The exact group size needed (integer >= 1)
- * @returns MinimumBundlesResult detailing whether it is possible, total bundles, and breakdown
- */
+const notPossible = (): MinimumBundlesResult => ({
+  possible: false,
+  totalBundles: null,
+  bundles: [],
+  totalSeats: null,
+});
+
 export function computeMinimumBundles(
   bundleSizes: number[],
   groupSize: number,
 ): MinimumBundlesResult {
-  // Validate basic parameters
-  if (
-    !Number.isInteger(groupSize) ||
-    groupSize < 1 ||
-    !Array.isArray(bundleSizes) ||
-    bundleSizes.length === 0
-  ) {
-    return {
-      possible: false,
-      totalBundles: null,
-      bundles: [],
-      totalSeats: null,
-    };
-  }
+  const sizes = [...new Set(bundleSizes)].sort((a, b) => b - a);
 
-  // Filter valid positive integer bundle sizes and deduplicate
-  const validSizes = Array.from(
-    new Set(
-      bundleSizes.filter((s) => Number.isInteger(s) && s > 0 && s <= 500),
-    ),
-  );
-
-  if (validSizes.length === 0) {
-    return {
-      possible: false,
-      totalBundles: null,
-      bundles: [],
-      totalSeats: null,
-    };
-  }
-
-  // Sort bundle sizes descending to naturally prefer larger bundles when tie-breaking
-  validSizes.sort((a, b) => b - a);
-
-  // dp[x] represents the minimum number of bundles needed to form exactly x seats
-  // parentBundle[x] stores the bundle size used in the optimal transition to reach x
-  const dp: number[] = Array.from({ length: groupSize + 1 }, () => Infinity);
-  const parentBundle: number[] = Array.from({ length: groupSize + 1 }, () => -1);
-
+  const dp = new Array<number>(groupSize + 1).fill(Infinity);
+  const lastBundle = new Array<number>(groupSize + 1).fill(0);
   dp[0] = 0;
 
-  for (let x = 1; x <= groupSize; x++) {
-    for (const size of validSizes) {
-      if (x >= size && dp[x - size] !== Infinity) {
-        const candidateBundles = dp[x - size] + 1;
-        if (candidateBundles < dp[x]) {
-          dp[x] = candidateBundles;
-          parentBundle[x] = size;
-        }
+  for (let seats = 1; seats <= groupSize; seats++) {
+    for (const size of sizes) {
+      if (size <= seats && dp[seats - size] + 1 < dp[seats]) {
+        dp[seats] = dp[seats - size] + 1;
+        lastBundle[seats] = size;
       }
     }
   }
 
-  // If the target groupSize state is unreachable, no exact combination exists
-  if (dp[groupSize] === Infinity) {
-    return {
-      possible: false,
-      totalBundles: null,
-      bundles: [],
-      totalSeats: null,
-    };
+  if (dp[groupSize] === Infinity) return notPossible();
+
+  const counts = new Map<number, number>();
+  for (let seats = groupSize; seats > 0; seats -= lastBundle[seats]) {
+    counts.set(lastBundle[seats], (counts.get(lastBundle[seats]) ?? 0) + 1);
   }
 
-  // Backtrack to count the quantity of each bundle size used
-  const bundleCounts = new Map<number, number>();
-  let current = groupSize;
-
-  while (current > 0) {
-    const size = parentBundle[current];
-    if (size <= 0) {
-      // Defensive fallback in case of corrupted backtrack state
-      return {
-        possible: false,
-        totalBundles: null,
-        bundles: [],
-        totalSeats: null,
-      };
-    }
-    bundleCounts.set(size, (bundleCounts.get(size) || 0) + 1);
-    current -= size;
-  }
-
-  // Format bundle breakdown sorted descending by size
-  const bundles: BundleAllocation[] = Array.from(bundleCounts.entries())
+  const bundles = [...counts]
     .map(([size, quantity]) => ({ size, quantity }))
     .sort((a, b) => b.size - a.size);
 

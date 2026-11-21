@@ -43,19 +43,16 @@ export function wouldCreateCycle(
   targetId: string,
   proposedPrerequisites: string[],
 ): boolean {
-  // Self-dependency: direct cycle
   if (proposedPrerequisites.includes(targetId)) {
     return true;
   }
 
-  // Construct proposed graph
   const graph = new Map<string, string[]>();
   for (const [node, prereqs] of existingGraph.entries()) {
     graph.set(node, [...prereqs]);
   }
   graph.set(targetId, [...proposedPrerequisites]);
 
-  // Ensure all prerequisite nodes exist in graph
   for (const prereq of proposedPrerequisites) {
     if (!graph.has(prereq)) {
       graph.set(prereq, existingGraph.get(prereq) || []);
