@@ -1,0 +1,23 @@
+name: Keep Render Backend Alive
+
+on:
+  schedule:
+    # Run every 10 minutes to prevent Render's 15-minute inactivity spin-down
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Health Endpoint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send HTTP Ping to Render Backend
+        run: |
+          echo "Pinging Render backend health endpoint..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 https://doomsday-ready-api-j3u7.onrender.com/api/health)
+          echo "Backend responded with HTTP status: $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "✅ Server is awake and healthy!"
+          else
+            echo "⚠️ Status code: $STATUS (Server might be cold-booting)"
+          fi
