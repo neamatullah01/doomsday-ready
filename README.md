@@ -12,6 +12,14 @@
 
 ---
 
+## 🌐 Live Deployments & API Documentation
+
+- **Frontend Application**: `[YOUR_FRONTEND_URL]` *(e.g., https://doomsday-ready.vercel.app)*
+- **Backend REST API**: [https://doomsday-ready-api-j3u7.onrender.com/api](https://doomsday-ready-api-j3u7.onrender.com/api)
+- **Interactive Swagger API Docs**: [https://doomsday-ready-api-j3u7.onrender.com/api/docs](https://doomsday-ready-api-j3u7.onrender.com/api/docs)
+
+---
+
 ## 1. Project Overview & Capabilities
 
 **Doomsday Ready** provides two core calculation and planning capabilities:
@@ -247,9 +255,9 @@ To run the entire stack (PostgreSQL, NestJS API, and React frontend) with a sing
 docker compose up --build
 ```
 
-- **Frontend Application**: `http://localhost:5173`
-- **Backend REST API**: `http://localhost:3000/api`
-- **Swagger Documentation**: `http://localhost:3000/api/docs`
+- **Frontend Application**: `http://localhost:5173` (Production: `[YOUR_FRONTEND_URL]`)
+- **Backend REST API**: `http://localhost:3000/api` (Production: [https://doomsday-ready-api-j3u7.onrender.com/api](https://doomsday-ready-api-j3u7.onrender.com/api))
+- **Swagger Documentation**: `http://localhost:3000/api/docs` (Production: [https://doomsday-ready-api-j3u7.onrender.com/api/docs](https://doomsday-ready-api-j3u7.onrender.com/api/docs))
 - **PostgreSQL Database**: `localhost:5432`
 
 ---
