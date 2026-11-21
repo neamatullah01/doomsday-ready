@@ -14,7 +14,7 @@
 
 ## 🌐 Live Deployments & API Documentation
 
-- **Frontend Application**: `[YOUR_FRONTEND_URL]` *(e.g., https://doomsday-ready.vercel.app)*
+- **Frontend Application**: [https://doomsday-ready.vercel.app](https://doomsday-ready-lovat.vercel.app)
 - **Backend REST API**: [https://doomsday-ready-api-j3u7.onrender.com/api](https://doomsday-ready-api-j3u7.onrender.com/api)
 - **Interactive Swagger API Docs**: [https://doomsday-ready-api-j3u7.onrender.com/api/docs](https://doomsday-ready-api-j3u7.onrender.com/api/docs)
 
